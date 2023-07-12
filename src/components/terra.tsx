@@ -3,8 +3,7 @@ import * as mqtt from 'react-paho-mqtt';
 import React from 'react';
 
 interface TerraProps {
-    username: string,
-    password: string
+   
 }
 
 interface TerraState {
@@ -28,9 +27,36 @@ export class Terra extends React.Component<TerraProps, TerraState> {
             modes: [],
             current_mode: ""
         };
+        this.client = null;
     }
 
-    componentDidMount() {
+    connect(askCredentials : boolean = false) {
+
+        if (this.client !== null && this.client.isConnected()) {
+            this.client.disconnect();
+        }
+
+        const cookies = document.cookie.split(';');
+        let username : string | null = null;
+        let password : string | null = null;
+
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith("username=")) {
+            username = cookie.substring("username=".length, cookie.length);
+            } else if (cookie.startsWith("password=")) {
+            password = cookie.substring("password=".length, cookie.length);
+            }
+        }
+
+        // Prompt for username and password if not found in cookies
+        if (askCredentials || username === null || password === null) {
+            username = prompt("Username");
+            password = prompt("Password");
+            document.cookie = "username=" + username;
+            document.cookie = "password=" + password;
+        }
+
         this.client = mqtt.connect(
             "plantescarnivores.net", 
             9001, 
@@ -40,8 +66,8 @@ export class Terra extends React.Component<TerraProps, TerraState> {
         );
 
         const options = {
-            userName: this.props.username,
-            password: this.props.password,
+            userName: username,
+            password: password,
             onSuccess: this.onConnect,
             onFailure: this.onConnectionLost,
             reconnect: true
@@ -51,7 +77,10 @@ export class Terra extends React.Component<TerraProps, TerraState> {
 
         this.client.onConnectionLost = this.onConnectionLost;
         this.client.onMessageArrived = this.onMessageArrived;
+    }
 
+    componentDidMount() {
+        this.connect();
     }
 
     onConnect = () => {
@@ -115,22 +144,47 @@ export class Terra extends React.Component<TerraProps, TerraState> {
 
     render() {
         return (
-            <div>
-                <h1>Temperature: {this.state.temperature}</h1>
-                <h1>Humidity: {this.state.humidity}</h1>
-
-                <div className="planning_checkbox">
-                    <input type="checkbox" defaultChecked={this.state.planning_active} onClick={this.onPlanningActiveChange} />
-                    <label>Follow planning</label>
-                </div>
-
-                <div className="mode_select">
-                    <label>Mode</label>
-                    <select value={this.state.current_mode} onChange={this.onModeChange} disabled={this.state.planning_active || this.state.planning_active === undefined || this.state.modes.length === 0}>
-                        {this.state.modes.map((mode) => <option value={mode} key={mode}>{mode}</option>)}
-                    </select>
+            <div id="terra">
+                
+                <div id="temperature">
+                    <div className="centered">
+                        <div>Temperature</div>
+                        <div className="value">{this.state.temperature}°C</div>
+                    </div>
                 </div>
                 
+                <div id="humidity">
+                    <div className="centered">
+                        <div>Humidity</div>
+                        <div className="value">{this.state.humidity}%</div>
+                    </div>
+                </div>
+                
+
+                <div id="planning-checkbox">
+                    <label className="checkbox-button">
+                        <input type="checkbox" id="planning-checkbox" defaultChecked={this.state.planning_active} onClick={this.onPlanningActiveChange}/>
+                        <span className="checkmark"></span>
+                        <span className="label-text">Planning</span>
+                    </label>
+                </div>
+
+
+                <div id="mode">
+                    <div className="dropdown">
+                        <label>Mode</label>
+                        <select value={this.state.current_mode} onChange={this.onModeChange} disabled={this.state.planning_active || this.state.planning_active === undefined || this.state.modes.length === 0}>
+                            {this.state.modes.map((mode) => <option value={mode} key={mode}>{mode}</option>)}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="change-login">
+                    <input type="button" value="Change login" onClick={() => {
+                        this.connect(true);
+                    }
+                    }/>
+                </div>
             </div>
 
         );
