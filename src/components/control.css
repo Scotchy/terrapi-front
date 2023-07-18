@@ -20,7 +20,7 @@
 .control-on > img {
     /* Make it spin */
     animation: spin 1s linear infinite;
-    transform-origin: 13px 15px;
+    transform-origin: 50% 57%;
 }
 
 @keyframes spin {
