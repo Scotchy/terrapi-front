@@ -17,7 +17,7 @@
     background-color: #c4c4c4;
 }
 
-.control-on > img {
+.control-on > .fan-icon {
     /* Make it spin */
     animation: spin 1s linear infinite;
     transform-origin: 50% 57%;

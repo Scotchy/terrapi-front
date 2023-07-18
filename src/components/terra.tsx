@@ -183,7 +183,7 @@ export class Terra extends React.Component<TerraProps, TerraState> {
                         
                         <div id="control-cooling">
                             <Control state={this.state.controls_state.cooling_system}>
-                                <img src={require("../resources/images/cooling-system.png")} alt="Cooling system" style={{height: "60%"}}/>
+                                <img src={require("../resources/images/cooling-system.png")} className="fan-icon" alt="Cooling system" style={{height: "60%"}}/>
                             </Control>
                         </div>
                     </div>
